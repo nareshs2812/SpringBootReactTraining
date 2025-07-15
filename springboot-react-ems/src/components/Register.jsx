@@ -3,32 +3,50 @@ import axios from "axios";
 import './Register.css';
 
 const Register = () => {
+  const [name, setName] = useState("");
   const [userName, setUserName] = useState("");
-  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
 
   const handleRegister = async (event) => {
     event.preventDefault();
     try {
       const response = await axios.post("http://localhost:3001/api/auth/register", {
+        name,
         userName,
-        password,
         email,
+        password,
+        role,
       });
       alert("Registration successful!");
+      setName("");
       setUserName("");
       setEmail("");
       setPassword("");
+      setRole("");
     } catch (error) {
+      console.error("Registration failed", error);
       alert("Registration failed");
     }
   };
 
   return (
     <div className="container">
-      <h1 className="register-heading">Create Your Account</h1>
+      <h1 className="register-heading">Create New Account</h1>
       <form onSubmit={handleRegister} className="register-form">
-        <label htmlFor="userName">User Name</label>
+
+        <label htmlFor="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          value={name}                                                 //ROLL NO: 23CS101
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter your name"
+          required
+        />
+
+        <label htmlFor="userName">Username</label>
         <input
           id="userName"
           type="text"
@@ -48,7 +66,7 @@ const Register = () => {
           required
         />
 
-        <label type="password">Password</label>
+        <label htmlFor="password">Password</label>
         <input
           id="password"
           type="password"
@@ -57,6 +75,24 @@ const Register = () => {
           placeholder="Enter password"
           required
         />
+
+        <label>User Role</label>
+        <div>
+          <input
+            type="radio"
+            name="role"
+            value="Admin"
+            checked={role === "Admin"}                                    //ROLL NO: 23CS101
+            onChange={(e) => setRole(e.target.value)}
+          /> Admin
+          <input
+            type="radio"
+            name="role"
+            value="User"
+            checked={role === "User"}
+            onChange={(e) => setRole(e.target.value)}
+          /> User
+        </div>
 
         <button type="submit">Register</button>
       </form>
