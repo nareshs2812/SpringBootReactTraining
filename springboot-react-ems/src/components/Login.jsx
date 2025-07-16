@@ -1,52 +1,95 @@
-import { useState } from "react";
-import axios from "axios";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './LoginPage.css';
 
-const Login = () => {
-  const [userName, setUserName] = useState("");
-  const [password, setPassword] = useState("");
-  async function handleLogin(event){
-    event.preventDefault();
-    try{
-        const token = await axios.post("http://localhost:3001/api/auth/login",{userName,password})
-        console.log(token);
-        alert("Login Successful")
-    } catch (e){
-        console.log("Login Error", e);
-        alert("Invalid Cred")
+const LoginForm = () => {
+  const [form, setForm] = useState({ userName: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const contentType = res.headers.get('content-type');
+      const data = contentType?.includes('application/json') ? await res.json() : await res.text();
+
+      if (!res.ok) {
+        throw new Error(data?.error || data || 'Login failed');
+      }
+
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    console.log("Form Submitted");
-  }
+  };
+
+  const goToRegister = () => {
+    navigate('/register');
+  };
+
   return (
-    <div>
-      <h2>Login</h2>
-      <div>
-        <form onSubmit={handleLogin}>
-          <label htmlFor="userName">User Name</label>
-          <input
-            id="userName"
-            name="userName"
-            value={userName}
-            type="text"
-            onChange={(e) => setUserName(e.target.value)}
-          />
-          <br /> <br />
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            value={password}
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <br />
-          <br />
-          <button type="submit">Login</button>
-          <Link to="/register">
-            <button type="button">Register</button>
-          </Link>
+    <div className="login-wrapper">
+      <div className="login-left">
+        <h1>Entry Portal To<br />Your Online World</h1>
+        <img src="/loginimage.png" alt="Login Illustration" />
+      </div>
+
+      <div className="login-right">
+        <form className="login-form" onSubmit={handleSubmit}>
+          <h2>Login to your CourseSphere</h2>
+          {error && <div className="error">{error}</div>}
+
+          <div className="form-group">
+            <label>Username</label>
+            <input
+              type="text"
+              name="userName"
+              value={form.userName}
+              onChange={handleChange}
+              required
+              placeholder="Enter your username or email"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <button type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Log In'}
+          </button>
+
+          <button type="button" className="register-btn" onClick={goToRegister}>
+            Don’t have an account?
+          </button>
         </form>
       </div>
     </div>
   );
 };
-export default Login;
+
+export default LoginForm;
